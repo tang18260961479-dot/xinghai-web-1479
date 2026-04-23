@@ -149,6 +149,33 @@
             transition: opacity 0.55s ease, visibility 0.55s ease;
         }
 
+
+        /* ==================== 冻结顶部导航栏 ==================== */
+        nav {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 9500 !important;
+            transform: translate3d(0, 0, 0) !important;
+            will-change: auto !important;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        nav::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(249,248,244,0.92), rgba(249,248,244,0.74));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            pointer-events: none;
+            z-index: -1;
+        }
+
         .perspective { perspective: 1500px; }
         .preserve-3d { transform-style: preserve-3d; }
 
@@ -709,7 +736,7 @@
     <div id="cursor-ring"></div>
 
     <!-- 顶部导航 -->
-    <nav class="fixed top-0 left-0 w-full px-5 py-4 md:px-12 md:py-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 z-[100] pointer-events-none">
+    <nav class="fixed top-0 left-0 w-full px-5 py-4 md:px-12 md:py-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 z-[100] pointer-events-none relative">
         <div class="pointer-events-auto text-sm md:text-base font-display tracking-[0.3em] uppercase text-primary hover-target cursor-pointer transition-opacity hover:opacity-70" onclick="navigate('home')">
             Tang Yingjie
         </div>
