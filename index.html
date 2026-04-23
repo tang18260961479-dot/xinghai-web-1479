@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>唐英杰 | 个人主页</title>
+
+    <!-- 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP & Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.min.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+
+    <style>
+        :root {
+            --color-bg: #F9F8F4;
+            --color-text: #1C1C1A;
+            --color-text-muted: #7A7A73;
+            --color-accent-1: #EBE5D9;
+            --color-accent-2: #D1C7B4;
+            --color-accent-3: #F0EAD6;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Cinzel', serif;
+        }
+
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ==================== 动态环境光晕背景 ==================== */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+            background: var(--color-bg);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.6;
+            animation: float 25s infinite alternate ease-in-out;
+        }
+
+        .orb-1 { width: 60vw; height: 60vw; background: #F0EAD6; top: -20%; left: -10%; }
+        .orb-2 { width: 50vw; height: 50vw; background: #EAE3D5; bottom: -10%; right: -10%; animation-delay: -5s; }
+        .orb-3 { width: 40vw; height: 40vw; background: #FAF9F6; top: 30%; left: 40%; animation-delay: -10s; }
+
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            z-index: -1;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        @keyframes float {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(3%, 5%) scale(1.05); }
+            100% { transform: translate(-3%, -2%) scale(0.95); }
+        }
+
+        /* ==================== 自定义光标 ==================== */
+        #cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: #1C1C1A;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        #cursor-ring {
+            position: fixed;
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(28, 28, 26, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, border-color 0.3s, background 0.3s, opacity 0.3s;
+        }
+
+        body.hovering-link #cursor-dot { width: 0; height: 0; }
+        body.hovering-link #cursor-ring {
+            width: 50px;
+            height: 50px;
+            background: rgba(28, 28, 26, 0.05);
+            border-color: rgba(28, 28, 26, 0.1);
+            backdrop-filter: blur(2px);
+        }
+
+        /* ==================== 开屏动画：信封 ==================== */
+        #intro-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #F9F8F4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        body.is-intro-active nav,
+        body.is-intro-active #storybook-layer,
+        body.is-intro-active .ambient-bg,
+        body.is-intro-active .noise-overlay,
+        body.is-intro-active #app-router {
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
+        nav,
+        #storybook-layer,
+        .ambient-bg,
+        .noise-overlay,
+        #app-router {
+            transition: opacity 0.55s ease, visibility 0.55s ease;
+        }
+
+        .perspective { perspective: 1500px; }
+        .preserve-3d { transform-style: preserve-3d; }
+
+        #envelope {
+            position: relative;
+            width: 360px;
+            height: 230px;
+            background: #E2D7C1;
+            box-shadow: 0 35px 60px -15px rgba(0,0,0,0.15), 0 0 20px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: transform 0.4s ease;
+        }
+
+        @media (min-width: 768px) {
+            #envelope { width: 620px; height: 398px; }
+        }
+
+        #envelope-wrapper:hover #envelope { transform: scale(1.03) translateY(-4px); }
+
+        #preload-cluster {
+            position: absolute;
+            inset: 0;
+            z-index: 24;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .preload-petal {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 18px;
+            height: 13px;
+            border-radius: 70% 30% 68% 32% / 68% 36% 64% 32%;
+            opacity: 0;
+            box-shadow: 0 6px 12px rgba(186, 160, 150, 0.10);
+            will-change: transform, opacity;
+        }
+
+        .preload-petal::after {
+            content: '';
+            position: absolute;
+            inset: 14% 22% 28% 18%;
+            border-radius: inherit;
+            background: rgba(255,255,255,0.16);
+            filter: blur(0.3px);
+        }
+
+        #preload-core {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.42), rgba(255,255,255,0.12) 28%, rgba(241, 211, 214, 0.94) 34%, rgba(234, 198, 206, 0.96) 68%, rgba(236, 204, 181, 0.96) 100%);
+            box-shadow: 0 4px 12px rgba(200, 171, 170, 0.18);
+            transform: translate(-50%, -50%) scale(0.6);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #intro-hint {
+            color: #4a4138;
+            font-weight: 600;
+            letter-spacing: 0.34em;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+        }
+
+        #intro-letter {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            top: 18px;
+            background: #FCFAFA;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+            border: 1px solid rgba(0,0,0,0.02);
+            z-index: 5; /* 修复点：明确信件的层级，在打开时使其处于顶盖之前 */
+        }
+
+        @media (min-width: 768px) {
+            #intro-letter { left: 16px; right: 16px; bottom: 16px; top: 24px; }
+        }
+
+        .envelope-pocket { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+        .pocket-left {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 50%;
+            background: #DCCFB8; clip-path: polygon(0 0, 100% 50%, 0 100%);
+            filter: drop-shadow(2px 0 3px rgba(0,0,0,0.03));
+        }
+        .pocket-right {
+            position: absolute; right: 0; top: 0; bottom: 0; width: 50%;
+            background: #DCCFB8; clip-path: polygon(100% 0, 0 50%, 100% 100%);
+            filter: drop-shadow(-2px 0 3px rgba(0,0,0,0.03));
+        }
+        .pocket-bottom {
+            position: absolute; left: 0; right: 0; bottom: 0; height: 60%;
+            background: #DCCFB8; clip-path: polygon(0 100%, 50% 0, 100% 100%);
+            filter: drop-shadow(0 -2px 3px rgba(0,0,0,0.04));
+        }
+
+        #top-flap {
+            position: absolute; top: 0; left: 0; width: 100%; height: 65%;
+            background: #E6DBC5; transform-origin: top; z-index: 20;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            border-top: 1px solid rgba(255,255,255,0.7);
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.06));
+        }
+
+        /* ==================== 页面切换逻辑 ==================== */
+        .page-view {
+            display: none !important;
+            opacity: 1; 
+            width: 100%;
+        }
+
+        #page-home.active, #page-work.active { display: block !important; }
+        #page-contact.active { display: flex !important; }
+
+        /* ==================== 翻页过场动画幕布 ==================== */
+        #page-transition {
+            position: fixed;
+            inset: 0;
+            background-color: #EBE5D9;
+            z-index: 99990; 
+            transform: translateY(100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; 
+        }
+        
+        .transition-logo {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.3em;
+            color: #1C1C1A;
+            opacity: 0;
+        }
+
+        /* ==================== 导航 ==================== */
+        .nav-link {
+            position: relative; overflow: hidden; padding-bottom: 4px; color: var(--color-text-muted);
+        }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: var(--color-text); transform: translateX(-101%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-link:hover, .nav-link.active { color: var(--color-text); }
+        .nav-link:hover::after, .nav-link.active::after { transform: translateX(0); }
+
+        /* ==================== 项目与卡片样式 ==================== */
+        .project-item { transition: opacity 0.4s ease, transform 0.4s ease; cursor: pointer; border-color: rgba(0,0,0,0.06); }
+        .project-list:hover .project-item { opacity: 0.3; }
+        .project-list .project-item:hover { opacity: 1; transform: translateX(15px); }
+
+        .project-image-container {
+            height: 60vh; width: 100%; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.05); background: #fff;
+        }
+
+        .project-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s ease; transform: scale(1.03);
+        }
+        .project-image.active { opacity: 1; transform: scale(1); z-index: 10; }
+
+        /* 项目导航 Tab 样式 */
+        .project-tab {
+            position: relative; padding-bottom: 8px; color: var(--color-text-muted); white-space: nowrap; cursor: pointer; font-size: 0.875rem; transition: color 0.3s ease;
+        }
+        .project-tab::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: var(--color-text); transform: scaleX(0); transform-origin: right; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .project-tab:hover { color: var(--color-text); }
+        .project-tab.active { color: var(--color-text); font-weight: 600; }
+        .project-tab.active::after { transform: scaleX(1); transform-origin: left; }
+
+        .wheel-spoke { position: absolute; top: 0; left: 0; transition: z-index 0.2s ease; will-change: transform; }
+        .card-wrapper { position: absolute; left: 0; top: 0; transform: translate(-50%, -75vh); transform-origin: center center; }
+
+        .cert-card {
+            width: 260px; height: 360px; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.04); border-radius: 6px; overflow: hidden; backdrop-filter: blur(20px); display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(0,0,0,0.08); will-change: transform, opacity; transform-origin: center center;
+        }
+
+        @media (min-width: 768px) { .cert-card { width: 440px; height: 600px; } }
+
+        .text-primary   { color: var(--color-text); }
+        .text-secondary { color: var(--color-text-muted); }
+
+        /* ==================== 绘本叙事层：藤蔓 / 树枝 / 花瓣 ==================== */
+        body[data-page="home"] #storybook-layer { opacity: 0.95; }
+        body[data-page="work"] #storybook-layer { opacity: 0.82; }
+        body[data-page="contact"] #storybook-layer { opacity: 0.9; }
+
+        #storybook-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0.9;
+            transition: opacity 0.6s ease;
+            mix-blend-mode: multiply;
+        }
+
+        #vine-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .vine-path {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            vector-effect: non-scaling-stroke;
+            will-change: stroke-dashoffset, opacity;
+        }
+
+        .vine-main {
+            stroke: rgba(113, 135, 96, 0.78);
+            stroke-width: 2.8;
+        }
+
+        .vine-secondary {
+            stroke: rgba(145, 160, 118, 0.62);
+            stroke-width: 2.1;
+        }
+
+        .branch-path {
+            stroke: rgba(136, 108, 88, 0.36);
+            stroke-width: 1.75;
+        }
+
+        .leaf, .blossom {
+            opacity: 0;
+            transform-box: fill-box;
+            transform-origin: center center;
+            will-change: transform, opacity;
+        }
+
+        .leaf ellipse:nth-child(1) { fill: rgba(154, 178, 129, 0.68); }
+        .leaf ellipse:nth-child(2) { fill: rgba(170, 193, 150, 0.72); }
+        .blossom circle {
+            fill: rgba(242, 209, 214, 0.68);
+            filter: blur(0.2px);
+        }
+
+        .story-glow {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(48px);
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        .glow-a {
+            width: 280px;
+            height: 280px;
+            right: 7vw;
+            top: 12vh;
+            background: radial-gradient(circle, rgba(248,229,207,0.55) 0%, rgba(248,229,207,0.12) 55%, transparent 72%);
+        }
+
+        .glow-b {
+            width: 240px;
+            height: 240px;
+            left: 4vw;
+            bottom: 8vh;
+            background: radial-gradient(circle, rgba(219,232,204,0.38) 0%, rgba(219,232,204,0.1) 55%, transparent 72%);
+        }
+
+        #petal-field {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .petal {
+            position: absolute;
+            width: 18px;
+            height: 14px;
+            border-radius: 70% 30% 65% 35% / 70% 35% 65% 30%;
+            opacity: 0;
+            box-shadow: 0 8px 18px rgba(189, 164, 152, 0.08);
+            will-change: transform, opacity;
+        }
+
+        .petal::after {
+            content: '';
+            position: absolute;
+            inset: 18% 22% 30% 18%;
+            border-radius: inherit;
+            background: rgba(255,255,255,0.18);
+            filter: blur(1px);
+        }
+
+        .story-section-accent {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            pointer-events: none;
+            opacity: 0.22;
+            filter: blur(1px);
+        }
+
+        .story-section-accent::before,
+        .story-section-accent::after {
+            content: '';
+            position: absolute;
+            border-radius: 9999px 9999px 9999px 0;
+            background: linear-gradient(135deg, rgba(168, 188, 146, 0.62), rgba(201, 221, 183, 0.2));
+            transform-origin: bottom left;
+        }
+
+        .story-section-accent::before {
+            width: 72px;
+            height: 22px;
+            left: 28px;
+            top: 84px;
+            transform: rotate(-18deg);
+        }
+
+        .story-section-accent::after {
+            width: 56px;
+            height: 18px;
+            left: 54px;
+            top: 58px;
+            transform: rotate(28deg);
+        }
+
+        .section-divider-vine {
+            position: absolute;
+            left: 50%;
+            top: -42px;
+            width: 240px;
+            height: 120px;
+            transform: translateX(-50%);
+            opacity: 0.24;
+            pointer-events: none;
+        }
+
+        .section-divider-vine svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .section-divider-vine path {
+            fill: none;
+            stroke: rgba(130, 150, 104, 0.5);
+            stroke-width: 1.4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+
+        /* ==================== 留言表单 ==================== */
+        .message-panel {
+            width: 100%;
+            max-width: 860px;
+            margin-top: 1.25rem;
+            background: rgba(255,255,255,0.62);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 18px 38px rgba(0,0,0,0.04);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .message-input,
+        .message-textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 14px;
+            padding: 0.95rem 1rem;
+            color: var(--color-text);
+            outline: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+
+        .message-input::placeholder,
+        .message-textarea::placeholder {
+            color: rgba(28,28,26,0.42);
+        }
+
+        .message-input:focus,
+        .message-textarea:focus {
+            border-color: rgba(28,28,26,0.18);
+            box-shadow: 0 0 0 4px rgba(28,28,26,0.05);
+            background: rgba(255,255,255,0.9);
+        }
+
+        .message-textarea {
+            min-height: 168px;
+            resize: vertical;
+        }
+
+        .message-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 170px;
+            padding: 0.95rem 1.5rem;
+            border-radius: 999px;
+            background: #1C1C1A;
+            color: #F9F8F4;
+            border: 1px solid #1C1C1A;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            cursor: pointer;
+        }
+
+        .message-submit:hover {
+            transform: translateY(-1px);
+        }
+
+        .message-submit[disabled] {
+            opacity: 0.65;
+            cursor: wait;
+            transform: none;
+        }
+
+        .message-status {
+            min-height: 1.6rem;
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .message-panel {
+                padding: 1rem;
+                border-radius: 16px;
+            }
+        }
+
+    </style>
+</head>
+<body data-page="home" class="is-intro-active selection:bg-[#1C1C1A] selection:text-[#F9F8F4]">
+    
+    <!-- ==================== 翻页过场动画幕布 ==================== -->
+    <div id="page-transition">
+        <span class="transition-logo">T.Y</span>
+    </div>
+
+    <!-- ==================== 开屏动画 ==================== -->
+    <div id="intro-screen">
+        <div id="envelope-wrapper" class="perspective hover-target">
+            <div id="envelope" class="preserve-3d">
+                <div id="preload-cluster" aria-hidden="true">
+                    <div id="preload-core"></div>
+                </div>
+                <div id="intro-letter">
+                    <span class="text-[10px] md:text-xs text-secondary tracking-[0.4em] uppercase mb-4 md:mb-6">Portfolio / 2026</span>
+                    <h2 class="font-display text-3xl md:text-4xl text-primary tracking-[0.2em] mb-3 md:mb-4">TANG YINGJIE</h2>
+                    <div class="w-12 md:w-16 h-[1px] bg-gray-300 mt-2"></div>
+                </div>
+
+                <div class="envelope-pocket">
+                    <div class="pocket-left"></div>
+                    <div class="pocket-right"></div>
+                    <div class="pocket-bottom"></div>
+                </div>
+
+                <div id="top-flap" class="preserve-3d"></div>
+            </div>
+
+            <div id="intro-hint" class="absolute -bottom-20 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-secondary font-light uppercase opacity-60">
+                Loading... 0%
+            </div>
+        </div>
+    </div>
+
+    <!-- 背景 -->
+    
+    <!-- ==================== 全站绘本叙事层 ==================== -->
+    <div id="storybook-layer" aria-hidden="true">
+        <div class="story-glow glow-a"></div>
+        <div class="story-glow glow-b"></div>
+        <svg id="vine-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path class="vine-path vine-main" d="M 83 0 C 79 8, 88 15, 84 24 C 79 35, 70 38, 73 49 C 77 61, 91 67, 83 78 C 74 90, 51 90, 34 100" />
+            <path class="vine-path vine-secondary" d="M 16 6 C 24 12, 25 20, 20 29 C 14 38, 8 44, 13 53 C 19 63, 30 65, 28 74 C 25 85, 15 90, 14 100" />
+            <path class="vine-path branch-path" d="M 75 34 C 68 32, 63 28, 58 22" />
+            <path class="vine-path branch-path" d="M 73 48 C 63 49, 57 53, 53 60" />
+            <path class="vine-path branch-path" d="M 28 56 C 35 54, 39 49, 41 42" />
+            <path class="vine-path branch-path" d="M 29 74 C 38 76, 46 80, 50 87" />
+
+            <g class="leaf" data-bloom="0.12">
+                <ellipse cx="79" cy="16" rx="2.4" ry="1.05" transform="rotate(-18 79 16)"></ellipse>
+                <ellipse cx="82.2" cy="18.4" rx="2.2" ry="0.95" transform="rotate(28 82.2 18.4)"></ellipse>
+            </g>
+            <g class="leaf" data-bloom="0.23">
+                <ellipse cx="73" cy="31" rx="2.8" ry="1.1" transform="rotate(-34 73 31)"></ellipse>
+                <ellipse cx="69.8" cy="33.4" rx="2.1" ry="0.92" transform="rotate(18 69.8 33.4)"></ellipse>
+            </g>
+            <g class="leaf" data-bloom="0.36">
+                <ellipse cx="61" cy="24" rx="2.5" ry="1.0" transform="rotate(24 61 24)"></ellipse>
+                <ellipse cx="57.7" cy="22.2" rx="1.9" ry="0.85" transform="rotate(-24 57.7 22.2)"></ellipse>
+            </g>
+            <g class="leaf" data-bloom="0.48">
+                <ellipse cx="64.5" cy="54.5" rx="2.4" ry="0.98" transform="rotate(-38 64.5 54.5)"></ellipse>
+                <ellipse cx="59.8" cy="57.5" rx="2.2" ry="0.95" transform="rotate(16 59.8 57.5)"></ellipse>
+            </g>
+            <g class="leaf" data-bloom="0.61">
+                <ellipse cx="22.8" cy="39.5" rx="2.4" ry="1.0" transform="rotate(-32 22.8 39.5)"></ellipse>
+                <ellipse cx="18.8" cy="42.4" rx="2.0" ry="0.84" transform="rotate(18 18.8 42.4)"></ellipse>
+            </g>
+            <g class="leaf" data-bloom="0.74">
+                <ellipse cx="24.8" cy="68.3" rx="2.5" ry="1.02" transform="rotate(-20 24.8 68.3)"></ellipse>
+                <ellipse cx="29.6" cy="71.2" rx="2.2" ry="0.92" transform="rotate(30 29.6 71.2)"></ellipse>
+            </g>
+            <g class="leaf" data-bloom="0.88">
+                <ellipse cx="48.3" cy="86.2" rx="2.4" ry="1.02" transform="rotate(-34 48.3 86.2)"></ellipse>
+                <ellipse cx="52.3" cy="89" rx="2.0" ry="0.84" transform="rotate(18 52.3 89)"></ellipse>
+            </g>
+
+            <g class="blossom" data-bloom="0.28">
+                <circle cx="70.5" cy="34" r="1.2"></circle>
+                <circle cx="69.1" cy="33.2" r="0.72"></circle>
+                <circle cx="71.9" cy="33.2" r="0.72"></circle>
+                <circle cx="69.4" cy="34.9" r="0.72"></circle>
+                <circle cx="71.6" cy="34.9" r="0.72"></circle>
+            </g>
+            <g class="blossom" data-bloom="0.57">
+                <circle cx="59.6" cy="58.2" r="1.25"></circle>
+                <circle cx="58.2" cy="57.4" r="0.74"></circle>
+                <circle cx="61" cy="57.4" r="0.74"></circle>
+                <circle cx="58.5" cy="59.1" r="0.74"></circle>
+                <circle cx="60.7" cy="59.1" r="0.74"></circle>
+            </g>
+            <g class="blossom" data-bloom="0.81">
+                <circle cx="30.1" cy="72" r="1.2"></circle>
+                <circle cx="28.7" cy="71.3" r="0.72"></circle>
+                <circle cx="31.5" cy="71.3" r="0.72"></circle>
+                <circle cx="29" cy="72.9" r="0.72"></circle>
+                <circle cx="31.2" cy="72.9" r="0.72"></circle>
+            </g>
+        </svg>
+        <div id="petal-field"></div>
+    </div>
+
+
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="noise-overlay"></div>
+
+    <!-- 光标 -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- 顶部导航 -->
+    <nav class="fixed top-0 left-0 w-full px-5 py-4 md:px-12 md:py-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 z-[100] pointer-events-none">
+        <div class="pointer-events-auto text-sm md:text-base font-display tracking-[0.3em] uppercase text-primary hover-target cursor-pointer transition-opacity hover:opacity-70" onclick="navigate('home')">
+            Tang Yingjie
+        </div>
+        <div class="pointer-events-auto flex gap-4 md:gap-12 text-[10px] md:text-sm font-medium tracking-[0.1em] md:tracking-[0.2em] uppercase mt-1">
+            <a onclick="navigate('home')" id="nav-home" class="nav-link hover-target cursor-pointer active">主页 (Home)</a>
+            <a onclick="navigate('work')" id="nav-work" class="nav-link hover-target cursor-pointer">代表项目 (Work)</a>
+            <a onclick="navigate('contact')" id="nav-contact" class="nav-link hover-target cursor-pointer">联系方式 (Contact)</a>
+        </div>
+    </nav>
+
+    <!-- 路由容器 -->
+    <main id="app-router" style="opacity: 0;">
+        <!-- ==================== Home ==================== -->
+        <section id="page-home" class="page-view active">
+            <div class="h-screen flex flex-col justify-center items-center text-center px-4 relative">
+                <div class="story-section-accent -left-4 top-[14vh] rotate-[22deg]"></div>
+                <div class="story-section-accent right-[6vw] bottom-[16vh] scale-[0.8] -rotate-[28deg]"></div>
+                
+                <p class="text-secondary tracking-[0.3em] text-sm md:text-lg uppercase mb-3 md:mb-4 gs-reveal font-semibold relative z-10">桂林电子科技大学 · 通信工程</p>
+                
+                <div class="gs-reveal mb-2 relative z-10">
+                    <span class="font-display italic text-gray-400/80 text-base md:text-xl tracking-[0.15em]">Hello, my name is</span>
+                </div>
+
+                <div class="relative flex justify-center items-center w-full py-4 md:py-6 gs-reveal mb-6 md:mb-8">
+                    <!-- 背景装饰英文（超大水印） -->
+                    <div class="absolute text-[3.8rem] sm:text-[7rem] md:text-[10rem] lg:text-[15rem] font-display text-black opacity-5 whitespace-nowrap select-none pointer-events-none tracking-widest leading-none z-0 mt-2 md:mt-4" style="top: 50%; transform: translateY(-50%);">
+                        TANG YINGJIE
+                    </div>
+                    <!-- 前景中文姓名 -->
+                    <h1 class="text-[5.5rem] sm:text-8xl md:text-[9rem] lg:text-[12rem] font-display leading-none tracking-tight text-primary relative z-10 drop-shadow-sm">
+                        唐英杰
+                    </h1>
+                </div>
+
+                <p class="mt-2 md:mt-4 max-w-2xl text-secondary font-light leading-relaxed gs-reveal text-base sm:text-xl md:text-2xl relative z-10">
+                    具备扎实的数理基础与信号处理理论功底。<br>
+                    致力于 <strong class="text-primary font-medium">声学信号处理</strong>、<strong class="text-primary font-medium">多模态通信系统</strong> 以及 <strong class="text-primary font-medium">边缘端 AI 部署</strong>。<br>
+                    从理论算法推导，到受限硬件平台的高效落地。
+                </p>
+                <div class="absolute bottom-12 animate-bounce text-secondary/60 text-xs tracking-[0.3em] uppercase z-10">
+                    向下滚动探索
+                </div>
+            </div>
+
+            <div class="min-h-[70vh] flex items-center px-6 md:px-12 max-w-screen-xl mx-auto py-32 border-t border-black/5 relative">
+                <div class="section-divider-vine"><svg viewBox="0 0 240 120" preserveAspectRatio="none"><path d="M15 88 C 60 30, 92 18, 120 60 C 147 102, 190 96, 225 28 M98 50 C 92 38, 84 30, 73 24 M142 70 C 156 80, 168 91, 177 106" /></svg></div>
+                <div class="story-section-accent -right-4 top-[12%] scale-[0.68] rotate-[160deg]"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                    <div>
+                        <h2 class="text-5xl md:text-6xl font-display mb-10 text-primary leading-tight">
+                            全面发展<br><span class="italic text-gray-500">双向驱动</span>
+                        </h2>
+                        <p class="text-secondary font-light leading-loose text-lg md:text-xl mb-8">
+                            在校期间，我不仅担任学院学生兼职团委副书记与班长，培养了出色的项目管理与团队协作能力，更将极大的热情投入到科研实践中。
+                        </p>
+                        <p class="text-secondary font-light leading-loose text-lg md:text-xl">
+                            现已发表 <strong class="text-primary font-medium">EI 论文 1 篇</strong>，并荣获
+                            <strong class="text-primary font-medium">国家发明专利 1 项</strong>。无论是 MATLAB 的系统级仿真，
+                            还是 C/Python 的底层驱动与部署，我始终追求将不可见的数学模型转化为物理世界中的实时最优解。
+                        </p>
+                    </div>
+                    <div class="flex flex-col justify-center gap-12 border-l border-black/5 pl-8 md:pl-16">
+                        <div>
+                            <h3 class="text-xs md:text-sm tracking-[0.2em] text-gray-400 uppercase mb-3 font-semibold">Algorithm & Theory</h3>
+                            <p class="text-primary font-light text-base md:text-lg leading-relaxed">
+                                声源定位 (DOA) / 广义互相关 (GCC-PHAT) / 最小二乘法迭代 (IRLS) / 
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-xs md:text-sm tracking-[0.2em] text-gray-400 uppercase mb-3 font-semibold">Software & Deployment</h3>
+                            <p class="text-primary font-light text-base md:text-lg leading-relaxed">
+                                C / Python / MATLAB / Arduino IDE / TensorFlow / PyTorch
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-xs md:text-sm tracking-[0.2em] text-gray-400 uppercase mb-3 font-semibold">Hardware Platforms</h3>
+                            <p class="text-primary font-light text-base md:text-lg leading-relaxed">
+                                麦克风阵列硬件调试 / AD603 硬件调理电路
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 证书轮盘 -->
+            <div id="wheel-section" class="h-screen relative w-full overflow-hidden flex flex-col items-center">
+                <div class="section-divider-vine top-2 opacity-20"><svg viewBox="0 0 240 120" preserveAspectRatio="none"><path d="M18 96 C 72 38, 110 34, 140 68 C 168 100, 202 90, 224 36 M120 60 C 118 46, 116 38, 110 28 M154 78 C 164 90, 176 100, 188 106" /></svg></div>
+                <div class="absolute top-16 md:top-24 text-center z-20 pointer-events-none">
+                    <h2 class="text-sm md:text-base tracking-[0.3em] uppercase text-secondary mb-6">Honors & Patents</h2>
+                    <h3 class="text-5xl md:text-7xl font-display text-primary drop-shadow-sm">科研成果与荣誉</h3>
+                </div>
+
+                <div id="cert-wheel" class="absolute left-1/2 top-[120vh] w-0 h-0">
+                    <!-- 动态注入 -->
+                </div>
+            </div>
+
+            <footer class="w-full h-[25vh] border-t border-black/5 flex flex-col justify-center items-center relative z-20 bg-[#F9F8F4]/80 backdrop-blur-md">
+                <div class="story-section-accent left-[8vw] top-[10%] scale-[0.7] -rotate-[12deg]"></div>
+                <h2 class="font-display text-2xl text-gray-400 mb-6 tracking-[0.2em]">TANG YINGJIE</h2>
+                <span class="text-gray-400 text-xs tracking-[0.3em] uppercase cursor-pointer hover:text-primary transition-colors hover-target" onclick="lenis.scrollTo(0)">
+                    Back to Top &uarr;
+                </span>
+            </footer>
+        </section>
+
+        <!-- ==================== Work ==================== -->
+        <section id="page-work" class="page-view px-6 md:px-16 max-w-screen-2xl mx-auto pt-24 pb-24 min-h-[100dvh]">
+            <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-16 relative items-start">
+                
+                <!-- 左侧：项目导航与介绍 -->
+                <div class="lg:col-span-6 mt-8 md:mt-0 flex flex-col">
+                    <h2 class="text-sm md:text-base tracking-[0.3em] text-gray-400 uppercase mb-8 font-semibold gs-reveal-work">Selected Research</h2>
+
+                    <!-- 新增：搜索栏与项目 Tabs -->
+                    <div class="w-full mb-10 gs-reveal-work">
+                        <div class="relative mb-6">
+                            <input type="text" id="projectSearch" class="w-full bg-transparent border-b border-black/10 py-3 text-sm text-primary placeholder-gray-400 focus:outline-none focus:border-black/30 transition-colors hover-target" placeholder="输入关键词搜索项目 / Search projects...">
+                            <svg class="absolute right-0 top-3 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <div class="flex gap-6 overflow-x-auto no-scrollbar border-b border-black/5 pb-px" id="projectTabs">
+                            <!-- Tabs 将通过 JS 动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 动态项目内容展示区 -->
+                    <div id="projectContent" class="project-list w-full relative pb-10">
+                        <!-- 内容将通过 JS 动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 右侧：图像展示区 -->
+                <div class="lg:col-span-6 hidden lg:block h-full relative">
+                    <div class="project-image-container bg-white w-full h-[70vh] sticky top-24">
+                        <div id="img-default" class="project-image active flex flex-col items-center justify-center bg-[#FCFAFA]">
+                            <span class="text-gray-300 font-display text-3xl tracking-widest mb-3">HOVER TO REVEAL</span>
+                            <span class="text-gray-400 text-sm tracking-widest">将鼠标悬停在左侧场景上查看实测图</span>
+                        </div>
+
+                        <div id="projectImages">
+                            <!-- 图片将通过 JS 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== Contact ==================== -->
+        <section id="page-contact" class="page-view flex-col justify-center px-6 md:px-12 max-w-screen-xl mx-auto pt-24 pb-20 min-h-[100dvh]">
+            <div class="w-full text-center flex flex-col items-center py-10">
+                <p class="text-xs md:text-sm tracking-[0.3em] text-gray-500 uppercase mb-6 gs-reveal-contact font-semibold">
+                    常驻：广西桂林 | 中共预备党员
+                </p>
+
+                <h2 class="text-5xl sm:text-7xl md:text-8xl lg:text-[9rem] font-display mb-8 md:mb-10 text-primary gs-reveal-contact tracking-tight">
+                    Let's Connect.
+                </h2>
+
+                <div class="text-secondary font-light max-w-3xl mx-auto mb-12 md:mb-20 text-base md:text-xl gs-reveal-contact leading-loose bg-white/60 backdrop-blur p-6 md:p-10 rounded-lg border border-black/5 shadow-sm">
+                    <p class="mb-4">
+                        您好，我是 <strong class="text-primary font-medium">唐英杰</strong>，目前就读于
+                        <strong class="text-primary font-medium">桂林电子科技大学</strong>通信工程专业。
+                    </p>
+                    <p class="text-sm md:text-lg text-gray-500 leading-relaxed">
+                        具备扎实的数理基础与信号处理理论功底，在校期间曾任学院学生兼职团委副书记及班长，
+                        拥有丰富的团队协作与项目管理经验。无论是学术交流、项目合作，还是工作机会，
+                        都随时欢迎您的来信与联络。
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-8 md:gap-24 justify-center items-center gs-reveal-contact w-full mb-12 md:mb-20">
+                    <div class="flex flex-col items-center group p-2 md:p-4 w-full md:w-auto relative max-w-full">
+                        <span class="text-xs tracking-[0.2em] text-gray-400 uppercase mb-2 md:mb-4 font-semibold">Email Address</span>
+                        <div onclick="copyText('18260961479@163.com', this)" class="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-display text-primary border-b border-transparent group-hover:border-gray-300 transition-all hover-target cursor-pointer relative pb-2 break-all">
+                            18260961479@163.com
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center group p-2 md:p-4 w-full md:w-auto relative max-w-full">
+                        <span class="text-xs tracking-[0.2em] text-gray-400 uppercase mb-2 md:mb-4 font-semibold">Phone Number</span>
+                        <div onclick="copyText('18260961479', this)" class="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-display text-primary border-b border-transparent group-hover:border-gray-300 transition-all hover-target cursor-pointer relative pb-2 break-all">
+                            (+86) 18260961479
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gs-reveal-contact pb-10">
+                    <a href="./resume.pdf" target="_blank" download="resume.pdf" class="group relative inline-flex items-center gap-4 px-8 py-4 md:px-12 md:py-6 bg-[#1C1C1A] text-[#F9F8F4] border border-[#1C1C1A] rounded-full overflow-hidden hover-target transition-transform hover:scale-105 shadow-xl w-full sm:w-auto justify-center">
+                        <span class="font-medium tracking-widest text-xs md:text-sm flex items-center gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            下载完整简历 (PDF格式)
+                        </span>
+                    </a>
+                </div>
+
+
+                <div class="message-panel gs-reveal-contact">
+                    <div class="text-xs tracking-[0.3em] text-gray-400 uppercase mb-4 font-semibold">Leave a Message</div>
+                    <p class="text-sm md:text-base text-secondary leading-relaxed mb-6">
+                        这里可以直接给我留言。留言不会在网页前台公开展示，只会写入 Cloudflare D1 数据库，供我在后台查看。
+                    </p>
+
+                    <form id="messageForm" class="w-full">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <input
+                                class="message-input hover-target"
+                                type="text"
+                                name="name"
+                                maxlength="60"
+                                placeholder="你的称呼 / Name"
+                                required
+                            />
+                            <input
+                                class="message-input hover-target"
+                                type="email"
+                                name="email"
+                                maxlength="120"
+                                placeholder="邮箱（选填，用于回复） / Email"
+                            />
+                        </div>
+
+                        <div class="mb-4">
+                            <textarea
+                                class="message-textarea hover-target"
+                                name="message"
+                                maxlength="1000"
+                                placeholder="请输入你想对我说的话… / Write your message here"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div class="mb-5 flex justify-center md:justify-start overflow-x-auto">
+                            <div
+                                id="turnstile-container"
+                                class="min-h-[70px] w-full max-w-[320px]"
+                                data-sitekey="0x4AAAAAADBsDD5NW7egvudR"
+                                data-theme="light"
+                                data-size="flexible"
+                            ></div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row items-center md:items-center justify-between gap-4">
+                            <p id="messageFormStatus" class="message-status order-2 md:order-1 text-center md:text-left"></p>
+                            <button id="messageSubmitBtn" type="submit" class="message-submit hover-target order-1 md:order-2">
+                                发送留言
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // ==================== 1. DOM 引用 ====================
+        const introScreen = document.getElementById('intro-screen');
+        const envelopeWrapper = document.getElementById('envelope-wrapper');
+        const envelope = document.getElementById('envelope');
+        const topFlap = document.getElementById('top-flap');
+        const introLetter = document.getElementById('intro-letter');
+        const introHint = document.getElementById('intro-hint');
+        const appRouter = document.getElementById('app-router');
+        const preloadCluster = document.getElementById('preload-cluster');
+        const preloadCore = document.getElementById('preload-core');
+        const turnstileContainer = document.getElementById('turnstile-container');
+
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorRing = document.getElementById('cursor-ring');
+
+        const wheelContainer = document.getElementById('cert-wheel');
+        const wheelSection = document.getElementById('wheel-section');
+
+        const storybookLayer = document.getElementById('storybook-layer');
+        const petalField = document.getElementById('petal-field');
+        const storyPaths = Array.from(document.querySelectorAll('.vine-path'));
+        const storyLeaves = Array.from(document.querySelectorAll('.leaf'));
+        const storyBlooms = Array.from(document.querySelectorAll('.blossom'));
+        const storyGlows = Array.from(document.querySelectorAll('.story-glow'));
+        let storyGrowth = 0.08;
+        let storyScrollTrigger = null;
+        let lastPetalStamp = 0;
+        let preloadReady = false;
+        let preloadPetals = [];
+        let storyWheelBound = false;
+        const PRELOAD_PETAL_COUNT = 12;
+        const petalPalette = [
+            'linear-gradient(135deg, rgba(244,221,224,0.98), rgba(234,198,206,0.9))',
+            'linear-gradient(135deg, rgba(248,232,216,0.98), rgba(236,204,181,0.9))',
+            'linear-gradient(135deg, rgba(249,239,229,0.98), rgba(231,217,197,0.88))'
+        ];
+
+        let turnstileWidgetId = null;
+        let turnstileRenderRequested = false;
+        let turnstileTokenValue = '';
+
+        function setTurnstileStatus(message = '') {
+            const statusEl = document.getElementById('messageFormStatus');
+            if (statusEl) statusEl.textContent = message;
+        }
+
+        function renderTurnstileIfNeeded() {
+            if (!turnstileContainer || !window.turnstile || turnstileWidgetId !== null) return;
+
+            turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+                sitekey: turnstileContainer.dataset.sitekey,
+                theme: turnstileContainer.dataset.theme || 'light',
+                size: turnstileContainer.dataset.size || 'flexible',
+                callback: function (token) {
+                    turnstileTokenValue = token || '';
+                    const statusEl = document.getElementById('messageFormStatus');
+                    if (statusEl && (
+                        statusEl.textContent === '请先完成人机验证。' ||
+                        statusEl.textContent === '人机验证已过期，请重新验证。' ||
+                        statusEl.textContent === '人机验证加载失败，请稍后重试。' ||
+                        statusEl.textContent === '人机验证超时，请重新验证。'
+                    )) {
+                        statusEl.textContent = '';
+                    }
+                },
+                'expired-callback': function () {
+                    turnstileTokenValue = '';
+                    setTurnstileStatus('人机验证已过期，请重新验证。');
+                    if (window.turnstile && turnstileWidgetId !== null) {
+                        window.turnstile.reset(turnstileWidgetId);
+                    }
+                },
+                'timeout-callback': function () {
+                    turnstileTokenValue = '';
+                    setTurnstileStatus('人机验证超时，请重新验证。');
+                    if (window.turnstile && turnstileWidgetId !== null) {
+                        window.turnstile.reset(turnstileWidgetId);
+                    }
+                },
+                'error-callback': function () {
+                    turnstileTokenValue = '';
+                    setTurnstileStatus('人机验证加载失败，请稍后重试。');
+                },
+                'response-field': true,
+                'response-field-name': 'cf-turnstile-response'
+            });
+        }
+
+        function ensureTurnstileReady() {
+            if (turnstileRenderRequested) return;
+            turnstileRenderRequested = true;
+
+            const attempt = () => {
+                if (window.turnstile && turnstileContainer) {
+                    renderTurnstileIfNeeded();
+                    turnstileRenderRequested = false;
+                    return;
+                }
+                window.setTimeout(attempt, 120);
+            };
+
+            attempt();
+        }
+
+        function resetTurnstileWidget(clearStatus = false) {
+            turnstileTokenValue = '';
+            if (clearStatus) setTurnstileStatus('');
+            if (window.turnstile && turnstileWidgetId !== null) {
+                window.turnstile.reset(turnstileWidgetId);
+            }
+        }
+
+        function initStorybookLayer() {
+            storyPaths.forEach((path, index) => {
+                const length = path.getTotalLength();
+                path.dataset.length = String(length);
+                path.dataset.start = String(index * 0.12);
+                path.dataset.span = index === 0 ? 0.72 : (index === 1 ? 0.68 : 0.36);
+                gsap.set(path, {
+                    strokeDasharray: length,
+                    strokeDashoffset: length,
+                    opacity: index < 2 ? 0.22 : 0.14
+                });
+            });
+
+            gsap.set(storyLeaves, { opacity: 0, scale: 0.45, rotate: -14, transformOrigin: '50% 50%' });
+            gsap.set(storyBlooms, { opacity: 0, scale: 0.3, rotate: -10, transformOrigin: '50% 50%' });
+            gsap.set(storyGlows, { opacity: 0 });
+            renderStoryGrowth(storyGrowth);
+            refreshStoryScrollTrigger();
+        }
+
+        function renderStoryGrowth(progress) {
+            storyGrowth = Math.max(0.05, Math.min(1, progress));
+
+            storyPaths.forEach((path, index) => {
+                const length = Number(path.dataset.length || 0);
+                const start = Number(path.dataset.start || 0);
+                const span = Number(path.dataset.span || 1);
+                const local = Math.max(0, Math.min(1, (storyGrowth - start) / span));
+                path.style.strokeDashoffset = String(length * (1 - local));
+                path.style.opacity = index < 2 ? String(0.18 + local * 0.62) : String(0.12 + local * 0.32);
+            });
+
+            storyLeaves.forEach((leaf) => {
+                const bloomAt = Number(leaf.dataset.bloom || 0);
+                const local = Math.max(0, Math.min(1, (storyGrowth - bloomAt) / 0.14));
+                gsap.set(leaf, {
+                    opacity: local,
+                    scale: 0.4 + local * 0.7,
+                    rotate: -12 + local * 14
+                });
+            });
+
+            storyBlooms.forEach((bloom) => {
+                const bloomAt = Number(bloom.dataset.bloom || 0);
+                const local = Math.max(0, Math.min(1, (storyGrowth - bloomAt) / 0.12));
+                gsap.set(bloom, {
+                    opacity: local,
+                    scale: 0.3 + local * 0.9,
+                    rotate: -8 + local * 10
+                });
+            });
+
+            gsap.set('.glow-a', {
+                opacity: Math.max(0, Math.min(0.55, storyGrowth * 0.5)),
+                x: storyGrowth * -18,
+                y: storyGrowth * 12
+            });
+            gsap.set('.glow-b', {
+                opacity: Math.max(0, Math.min(0.38, storyGrowth * 0.42)),
+                x: storyGrowth * 14,
+                y: storyGrowth * -10
+            });
+        }
+
+        function refreshStoryScrollTrigger() {
+            if (storyScrollTrigger) {
+                storyScrollTrigger.kill();
+                storyScrollTrigger = null;
+            }
+
+            storyScrollTrigger = ScrollTrigger.create({
+                trigger: '#page-home',
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 0.6,
+                onUpdate: (self) => {
+                    if (!document.getElementById('page-home').classList.contains('active')) return;
+                    renderStoryGrowth(0.08 + self.progress * 0.92);
+                }
+            });
+        }
+
+        function updateStorybookMood(pageId) {
+            document.body.dataset.page = pageId;
+            const targets = {
+                home: 0.95,
+                work: 0.72,
+                contact: 0.84
+            };
+            gsap.to(storybookLayer, {
+                opacity: targets[pageId] ?? 0.8,
+                duration: 0.8,
+                ease: 'power2.out'
+            });
+
+            if (pageId === 'home') {
+                renderStoryGrowth(Math.max(storyGrowth, 0.18));
+            } else if (pageId === 'work') {
+                renderStoryGrowth(0.78);
+            } else if (pageId === 'contact') {
+                renderStoryGrowth(0.92);
+            }
+        }
+
+        function spawnPetalBurst(count = 5, originX = null, originY = null, spread = 140) {
+            for (let i = 0; i < count; i += 1) {
+                const petal = document.createElement('span');
+                petal.className = 'petal';
+                petal.style.background = petalPalette[Math.floor(Math.random() * petalPalette.length)];
+
+                const startX = originX ?? (window.innerWidth * (0.18 + Math.random() * 0.64));
+                const startY = originY ?? (-20 - Math.random() * 80);
+                const drift = (Math.random() - 0.5) * spread * 2;
+                const lift = 40 + Math.random() * 60;
+                const duration = 5.5 + Math.random() * 3.2;
+                const rotation = (Math.random() > 0.5 ? 1 : -1) * (160 + Math.random() * 320);
+                const scale = 0.65 + Math.random() * 0.85;
+
+                petal.style.left = `${startX + (Math.random() - 0.5) * spread}px`;
+                petal.style.top = `${startY + (Math.random() - 0.5) * 30}px`;
+                petal.style.transform = `rotate(${Math.random() * 90}deg) scale(${scale})`;
+                petalField.appendChild(petal);
+
+                gsap.fromTo(petal,
+                    {
+                        opacity: 0,
+                        x: 0,
+                        y: 0,
+                        rotate: Math.random() * 80,
+                        scale
+                    },
+                    {
+                        opacity: 0.82,
+                        duration: 0.6,
+                        ease: 'power2.out'
+                    }
+                );
+
+                gsap.to(petal, {
+                    x: drift,
+                    y: window.innerHeight + lift,
+                    rotate: rotation,
+                    duration,
+                    ease: 'none'
+                });
+
+                gsap.to(petal, {
+                    opacity: 0,
+                    duration,
+                    ease: 'power1.in',
+                    delay: duration * 0.45,
+                    onComplete: () => petal.remove()
+                });
+            }
+        }
+
+        function bindStoryWheelEffects() {
+            if (storyWheelBound) return;
+            storyWheelBound = true;
+
+            window.addEventListener('wheel', (event) => {
+                if (introScreen.style.display !== 'none') return;
+
+                const now = performance.now();
+                if (now - lastPetalStamp < 120) return;
+
+                const intensity = Math.min(4, Math.max(1, Math.round(Math.abs(event.deltaY) / 120)));
+                const x = window.innerWidth * (0.18 + Math.random() * 0.64);
+                const y = -20 + Math.random() * 120;
+                spawnPetalBurst(intensity, x, y, 110 + intensity * 14);
+
+                if (document.getElementById('page-home').classList.contains('active')) {
+                    const nextGrowth = storyGrowth + Math.min(0.025, Math.abs(event.deltaY) / 3500);
+                    renderStoryGrowth(nextGrowth);
+                }
+                lastPetalStamp = now;
+            }, { passive: true });
+        }
+
+
+        // ==================== 2. 平滑滚动 ====================
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smooth: true
+        });
+
+        lenis.stop();
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // ==================== 3. 证书数据 (已更新 1_X 格式) ====================
+        const certData = [
+            { img: '1_1.jpg', title: '国家发明专利' },
+            { img: '1_2.jpg', title: 'EI 会议论文' },
+            { img: '1_3.jpg', title: '优秀学生干部' },
+            { img: '1_4.jpg', title: '校级一等奖学金' },
+            { img: '1_5.jpg', title: 'EI 会议论文' },
+            { img: '1_6.jpg', title: '优秀学生干部' },
+            { img: '1_7.jpg', title: 'EI 会议论文' },
+            { img: '1_8.jpg', title: '优秀学生干部' },
+            { img: '1_9.jpg', title: 'EI 会议论文' },
+            { img: '1_10.jpg', title: '优秀学生干部' },
+            { img: '1_11.jpg', title: 'EI 会议论文' }
+        ];
+
+        const angleStep = 22;
+        const totalRotation = (certData.length - 1) * angleStep;
+
+        function buildWheelDOM() {
+            wheelContainer.innerHTML = '';
+            certData.forEach((cert, index) => {
+                const angle = index * angleStep;
+                const cardHTML = `
+                    <div class="wheel-spoke" style="transform: rotate(${angle}deg);">
+                        <div class="card-wrapper">
+                            <div class="cert-card hover-target group">
+                                <div class="w-full h-full relative overflow-hidden bg-white/50">
+                                    <img
+                                        src="./${cert.img}"
+                                        alt="${cert.title}"
+                                        class="w-full h-full object-cover opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                    >
+                                    <div class="absolute inset-0 hidden flex-col items-center justify-center text-gray-400 text-center px-4 bg-gray-100">
+                                        <span class="text-xs tracking-widest">[等待加载: ${cert.img}]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                wheelContainer.insertAdjacentHTML('beforeend', cardHTML);
+            });
+            bindHover();
+        }
+
+        // ==================== 3.5 项目数据区 (全新 2_X_Y 格式) ====================
+        // 在这里你可以随意增加、修改、删除你的项目信息！
+        const projectsData = [
+            {
+                id: 'p1',
+                tabName: '声源定位系统',
+                title: '基于麦克风阵列的<br>室内复杂声场定位系统',
+                desc: '针对强混响与低信噪比环境，提出基于广义互相关 (GCC-PHAT) 与最小二乘法迭代 (IRLS) 的高精度定位方案。利用 CMU ARCTIC 语音库与 MATLAB 仿真，并在资源受限开发板上完成 C/Python 端侧部署。实测误差相较于传统算法降低 50% 以上。',
+                scenes: [
+                    { imgId: 'img-p1-1', title: '图1: 基础多径空旷测试室', label: 'SCENE 01', imgSrc: '2_1_1.jpg' },
+                    { imgId: 'img-p1-2', title: '图2: 强反射真实会议室', label: 'SCENE 02', imgSrc: '2_1_2.jpg' }
+                ]
+            },
+            {
+                id: 'p2',
+                tabName: 'AGC放大电路',
+                title: '基于AD603的大动态范围<br>AGC语音信号放大电路',
+                desc: '采用 AD603 模拟乘法器与锁相环技术，设计并实现大动态范围的自动增益控制（AGC）电路。通过精准的包络跟踪与反馈调节机制，成功实现对 50mVpp 至 5Vpp 宽动态范围语音信号的稳定调理，系统最大增益达 50dB。',
+                scenes: [
+                    { imgId: 'img-p3-1', title: '图1: 硬件调理电路实物图', label: 'SCENE 01', imgSrc: '2_3_1.jpg' },
+                    { imgId: 'img-p3-2', title: '图2: 示波器信号跟踪波形', label: 'SCENE 02', imgSrc: '2_3_2.jpg' }
+                ]
+            },
+            {
+                id: 'p3',
+                tabName: '智能密码锁',
+                title: 'STM32 双模智能密码锁系统',
+                desc: '基于 STM32F103C8T6 微控制器设计的工业级门禁控制系统。系统集成了 4×3 矩阵键盘本地交互与 HC-04 蓝牙无线控制，实现了安全、高效、低功耗的嵌入式闭锁控制。完美支持物理按键与手机蓝牙远程双向开锁，待机电流仅 5mA。',
+                scenes: [
+                    { imgId: 'img-p5-1', title: '图1: 整体密码锁设计实物', label: 'SCENE 01', imgSrc: '2_5_1.jpg' },
+                    { imgId: 'img-p5-2', title: '图2: 蓝牙无线操作界面', label: 'SCENE 02', imgSrc: '2_5_2.jpg' }
+                ]
+            },
+            {
+                id: 'p4',
+                tabName: 'Hi-Fi 音频功放',
+                title: '实用级高保真（Hi-Fi）<br>音频功放系统',
+                desc: '一款从底层电路设计到 PCB 实物落地的音频放大系统。系统由 NE5532 前置调音电路与分立元件后级功放组成，具备高中低音独立调节功能。通频带达 15Hz~124kHz，最大不失真输出功率达 13.66W，专为高保真音频还原设计。',
+                scenes: [
+                    { imgId: 'img-p6-1', title: '图1: Multisim 仿真模型', label: 'SCENE 01', imgSrc: '2_6_1.jpg' },
+                    { imgId: 'img-p6-2', title: '图2: PCB 实物与后级放大', label: 'SCENE 02', imgSrc: '2_6_2.jpg' }
+                ]
+            }
+        ];
+
+        const projectTabsContainer = document.getElementById('projectTabs');
+        const projectContentContainer = document.getElementById('projectContent');
+        const projectImagesContainer = document.getElementById('projectImages');
+        const projectSearch = document.getElementById('projectSearch');
+
+        let currentProjectIndex = 0;
+
+        // 构建并渲染项目区
+        function renderProjects(filteredData = projectsData) {
+            projectTabsContainer.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                projectContentContainer.innerHTML = `<p class="text-gray-400 mt-10">未找到相关的项目...</p>`;
+                projectImagesContainer.innerHTML = '';
+                return;
+            }
+
+            // 渲染 Tabs
+            filteredData.forEach((proj, i) => {
+                const isActive = (i === 0);
+                const tab = document.createElement('div');
+                tab.className = `project-tab hover-target ${isActive ? 'active' : ''}`;
+                tab.textContent = proj.tabName;
+                tab.onclick = () => selectProject(proj.id, tab);
+                projectTabsContainer.appendChild(tab);
+            });
+
+            // 默认渲染第一个
+            selectProject(filteredData[0].id, projectTabsContainer.firstChild);
+            bindHover(); // 重新绑定指针特效
+        }
+
+        // 切换项目内容
+        function selectProject(projectId, tabElement) {
+            // 更新 Tab 样式
+            if (tabElement) {
+                Array.from(projectTabsContainer.children).forEach(child => child.classList.remove('active'));
+                tabElement.classList.add('active');
+            }
+
+            const proj = projectsData.find(p => p.id === projectId);
+            if (!proj) return;
+
+            // 1. 生成左侧文字与场景列表 HTML
+            let scenesHTML = '';
+            proj.scenes.forEach(scene => {
+                scenesHTML += `
+                    <div class="project-item border-b border-black/5 py-6 hover-target" data-img-target="${scene.imgId}">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h4 class="text-xl sm:text-2xl md:text-3xl font-display text-primary transition-all duration-300">${scene.title}</h4>
+                            <span class="text-gray-400 font-light text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] ml-3 whitespace-nowrap">${scene.label}</span>
+                        </div>
+                        <!-- 手机端展示的图片 (桌面端隐藏) -->
+                        <div class="block lg:hidden w-full h-48 sm:h-64 mt-5 rounded-md overflow-hidden shadow-sm">
+                            <img src="./${scene.imgSrc}" alt="${scene.title}" class="w-full h-full object-cover" onerror="this.style.display='none';">
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 将内容包裹在一个带有独特动画 class 的 div 中
+            projectContentContainer.innerHTML = `
+                <div class="work-fade-content">
+                    <div class="mb-10">
+                        <h3 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display mb-6 text-primary leading-tight">${proj.title}</h3>
+                        <p class="text-secondary font-light leading-relaxed max-w-xl text-sm sm:text-base md:text-lg">
+                            ${proj.desc}
+                        </p>
+                    </div>
+                    <div class="border-t border-black/5">
+                        ${scenesHTML}
+                    </div>
+                </div>
+            `;
+
+            // 2. 生成右侧对应图片 HTML
+            let imagesHTML = '';
+            proj.scenes.forEach(scene => {
+                imagesHTML += `
+                    <img id="${scene.imgId}" src="./${scene.imgSrc}" alt="${scene.title}" class="project-image object-cover" onerror="this.style.display='none';">
+                `;
+            });
+            projectImagesContainer.innerHTML = imagesHTML;
+
+            // 3. 绑定悬停事件 (使得鼠标放上去图片能切换)
+            bindProjectHover();
+
+            // 4. 触发小范围的淡入动画
+            gsap.fromTo('.work-fade-content', 
+                { opacity: 0, y: 15 },
+                { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+            );
+            
+            // 重新绑定自定义指针
+            bindHover();
+        }
+
+        // 绑定项目悬停切换图片的事件
+        function bindProjectHover() {
+            const projectItems = document.querySelectorAll('.project-item');
+            const projectImages = document.querySelectorAll('.project-image');
+            const defaultImg = document.getElementById('img-default');
+
+            projectItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    const targetId = item.getAttribute('data-img-target');
+                    
+                    // 隐藏默认和所有的图片
+                    if(defaultImg) defaultImg.classList.remove('active');
+                    projectImages.forEach(img => img.classList.remove('active'));
+                    
+                    // 显示目标图片
+                    const targetImg = document.getElementById(targetId);
+                    if (targetImg) targetImg.classList.add('active');
+                });
+                
+                // 鼠标移出后可以保留最后一张图，或者恢复 default。这里保留最后一张，体验更好。
+            });
+        }
+
+        // 搜索过滤逻辑
+        projectSearch.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (!query) {
+                renderProjects(projectsData);
+                return;
+            }
+            const filtered = projectsData.filter(p => 
+                p.title.toLowerCase().includes(query) || 
+                p.desc.toLowerCase().includes(query) ||
+                p.tabName.toLowerCase().includes(query)
+            );
+            renderProjects(filtered);
+        });
+
+
+        // ==================== 4. 复制功能 ====================
+        window.copyText = function(text, el) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+
+                let tooltip = el.querySelector('.copy-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('span');
+                    tooltip.className = 'copy-tooltip absolute -top-12 left-1/2 transform -translate-x-1/2 text-[10px] bg-[#1C1C1A] text-white px-3 py-1.5 rounded shadow-lg opacity-0 transition-opacity whitespace-nowrap font-sans font-medium tracking-[0.2em] pointer-events-none z-50';
+                    tooltip.innerText = '已复制';
+                    el.appendChild(tooltip);
+                }
+
+                void tooltip.offsetWidth;
+                tooltip.classList.remove('opacity-0');
+
+                if (el.copyTimeout) clearTimeout(el.copyTimeout);
+                el.copyTimeout = setTimeout(() => {
+                    if (tooltip) tooltip.classList.add('opacity-0');
+                }, 2000);
+            } catch (err) {
+                console.error('复制失败', err);
+            }
+
+            document.body.removeChild(textArea);
+        };
+
+        // ==================== 5. 自定义光标 ====================
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+
+        const dotX = gsap.quickTo(cursorDot, "left", { duration: 0.1, ease: "power3" });
+        const dotY = gsap.quickTo(cursorDot, "top",  { duration: 0.1, ease: "power3" });
+        const ringX = gsap.quickTo(cursorRing, "left", { duration: 0.3, ease: "power3" });
+        const ringY = gsap.quickTo(cursorRing, "top",  { duration: 0.3, ease: "power3" });
+
+        window.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dotX(mouseX);
+            dotY(mouseY);
+            ringX(mouseX);
+            ringY(mouseY);
+        });
+
+        function bindHover() {
+            const hoverTargets = document.querySelectorAll('.hover-target');
+            hoverTargets.forEach(target => {
+                target.addEventListener('mouseenter', () => document.body.classList.add('hovering-link'));
+                target.addEventListener('mouseleave', () => document.body.classList.remove('hovering-link'));
+            });
+        }
+        bindHover();
+
+
+        // ==================== 7. 各页面文字动效 ====================
+        function triggerHomeAnimations() {
+            gsap.killTweensOf('.gs-reveal');
+            gsap.to('.gs-reveal', { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: "power4.out" });
+        }
+
+        function triggerWorkAnimations() {
+            gsap.killTweensOf('.gs-reveal-work');
+            gsap.to('.gs-reveal-work', { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: "power4.out" });
+            
+            // 如果切换到 Work 页，并且当前内容是透明的，触发一次内容淡入
+            gsap.fromTo('.work-fade-content', 
+                { opacity: 0, y: 15 },
+                { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.2 }
+            );
+        }
+
+        function triggerContactAnimations() {
+            gsap.killTweensOf('.gs-reveal-contact');
+            gsap.to('.gs-reveal-contact', { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: "power4.out" });
+        }
+
+        // ==================== 8. 证书轮盘核心修复 ====================
+        let wheelTween = null;
+
+        function updateWheelCardsVisual() {
+            const spokes = document.querySelectorAll('.wheel-spoke');
+            const screenCenterX = window.innerWidth / 2;
+
+            spokes.forEach((spoke) => {
+                const card = spoke.querySelector('.cert-card');
+                if (!card) return;
+
+                const rect = card.getBoundingClientRect();
+                const cardCenterX = rect.left + rect.width / 2;
+                const dist = Math.abs(screenCenterX - cardCenterX);
+
+                const maxDist = window.innerWidth / 1.5;
+                let progress = 1 - (dist / maxDist);
+                progress = Math.max(0, Math.min(1, progress));
+
+                const scale = 0.75 + (0.45 * Math.pow(progress, 3));
+                const opacity = 0.4 + (0.6 * Math.pow(progress, 2));
+                const zIndex = Math.round(progress * 100);
+
+                gsap.set(spoke, { zIndex });
+                gsap.set(card, { scale, opacity });
+            });
+        }
+
+        function killWheelScrollTrigger() {
+            if (wheelTween && wheelTween.scrollTrigger) {
+                wheelTween.scrollTrigger.kill(true);
+            }
+            if (wheelTween) {
+                wheelTween.kill();
+                wheelTween = null;
+            }
+            gsap.set(wheelContainer, { clearProps: "rotation,transform" });
+            gsap.set(".wheel-spoke", { clearProps: "zIndex" });
+            gsap.set(".cert-card", { clearProps: "scale,opacity,transform" });
+        }
+
+        function initWheelScrollTrigger() {
+            killWheelScrollTrigger();
+            
+            if(!document.getElementById('page-home').classList.contains('active')){
+                return;
+            }
+
+            buildWheelDOM();
+            
+            gsap.set(wheelContainer, { rotation: 15 });
+            gsap.set(".cert-card", { opacity: 0.4, scale: 0.75 });
+            gsap.set(".wheel-spoke", { zIndex: 1 });
+
+            // 针对手机端缩短滚动触发总长度，优化滑动体验
+            const scrollDistance = window.innerWidth < 768 ? certData.length * 400 : certData.length * 600;
+
+            wheelTween = gsap.to(wheelContainer, {
+                rotation: -totalRotation - 15,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: wheelSection,
+                    start: "top top",
+                    end: `+=${scrollDistance}`,
+                    scrub: 1,
+                    pin: true,
+                    invalidateOnRefresh: true,
+                    anticipatePin: 1,
+                    onUpdate: updateWheelCardsVisual,
+                    onRefresh: updateWheelCardsVisual
+                }
+            });
+            ScrollTrigger.refresh(true); 
+            updateWheelCardsVisual();
+        }
+
+        // ==================== 9. 终极丝滑路由切换 (带帷幕过场动画) ====================
+        let isNavigating = false; 
+
+        function navigate(pageId) {
+            const currentPage = document.querySelector('.page-view.active');
+            if (currentPage && currentPage.id === `page-${pageId}`) return;
+            if (isNavigating) return;
+
+            isNavigating = true;
+
+            const pages = document.querySelectorAll('.page-view');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const targetPage = document.getElementById(`page-${pageId}`);
+
+            navLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.getElementById(`nav-${pageId}`);
+            if (activeLink) activeLink.classList.add('active');
+
+            const tl = gsap.timeline({
+                onComplete: () => { isNavigating = false; }
+            });
+
+            // 1. 帷幕升起
+            tl.to("#page-transition", { y: "0%", duration: 0.5, ease: "power3.inOut" })
+              .to(".transition-logo", { opacity: 1, duration: 0.2 }, "-=0.2")
+              
+              // 2. 幕后偷天换日
+              .call(() => {
+                  if (currentPage && currentPage.id === 'page-home') killWheelScrollTrigger();
+                  pages.forEach(p => p.classList.remove('active'));
+                  
+                  lenis.scrollTo(0, { immediate: true });
+                  window.scrollTo(0, 0);
+
+                  // 释放全局平滑滚动
+                  lenis.start();
+                  document.body.style.overflow = '';
+
+                  targetPage.classList.add('active');
+
+                  updateStorybookMood(pageId);
+                  spawnPetalBurst(pageId === 'home' ? 7 : 5, window.innerWidth * 0.72, -10, 120);
+
+                  if (pageId === 'home') {
+                      gsap.set('.gs-reveal', { opacity: 0, y: 30 });
+                      initWheelScrollTrigger();
+                  } else if (pageId === 'work') {
+                      gsap.set('.gs-reveal-work', { opacity: 0, y: 30 });
+                      // 如果进入工作页，但尚未渲染过项目，则执行渲染
+                      if(projectTabsContainer.innerHTML === '') renderProjects();
+                      ScrollTrigger.refresh(true);
+                  } else if (pageId === 'contact') {
+                      gsap.set('.gs-reveal-contact', { opacity: 0, y: 30 });
+                      ScrollTrigger.refresh(true);
+                      requestAnimationFrame(() => {
+                          requestAnimationFrame(() => {
+                              ensureTurnstileReady();
+                          });
+                      });
+                  } else {
+                      ScrollTrigger.refresh(true);
+                  }
+              })
+              .to({}, { duration: 0.1 })
+              
+              // 3. 帷幕滑走揭开新页面 (开幕)
+              .to(".transition-logo", { opacity: 0, duration: 0.2 })
+              .add("curtainUp")
+              
+              .call(() => {
+                  if (pageId === 'home') triggerHomeAnimations();
+                  if (pageId === 'work') triggerWorkAnimations();
+                  if (pageId === 'contact') triggerContactAnimations();
+              }, null, "curtainUp")
+              
+              .to("#page-transition", { y: "-100%", duration: 0.6, ease: "power4.inOut" }, "curtainUp")
+              .call(() => {
+                  gsap.set("#page-transition", { y: "100%" }); 
+              });
+        }
+
+        // ==================== 10. 开屏动画 ====================
+        gsap.to(envelopeWrapper, {
+            y: -6,
+            duration: 1.5,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        });
+
+        let isOpened = false;
+
+        envelopeWrapper.addEventListener('click', () => {
+            if (isOpened || !preloadReady) return;
+            isOpened = true;
+
+            gsap.killTweensOf(envelopeWrapper);
+            gsap.to(introHint, { opacity: 0, y: 6, duration: 0.25, ease: 'power2.out' });
+            cursorRing.style.opacity = '0';
+
+            const tl = gsap.timeline();
+            const letterY = window.innerWidth >= 768 ? -170 : -118;
+
+            tl.call(() => {
+                scatterPreloadPetalsOnOpen();
+            }, null, 'start')
+              .to(topFlap, { rotationX: -180, duration: 1.1, ease: "power3.inOut" }, "start+=0.04")
+              .set(topFlap, { zIndex: 2 }, "start+=0.45")
+              .to(introLetter, { y: letterY, opacity: 1, duration: 1.05, ease: "power2.out" }, "start+=0.34")
+              .call(() => {
+                  gsap.set('.gs-reveal', { opacity: 0, y: 30 });
+                  gsap.set('.gs-reveal-work', { opacity: 0, y: 30 });
+                  gsap.set('.gs-reveal-contact', { opacity: 0, y: 30 });
+
+                  appRouter.style.opacity = '1';
+                  document.body.classList.remove('is-intro-active');
+                  lenis.start();
+                  renderProjects();
+                  initStorybookLayer();
+                  bindStoryWheelEffects();
+                  updateStorybookMood('home');
+                  initWheelScrollTrigger();
+              }, null, 'reveal')
+              .to(introScreen, { opacity: 0, duration: 0.85, ease: "power2.out" }, 'reveal')
+              .call(() => {
+                  triggerHomeAnimations();
+                  spawnPetalBurst(8, window.innerWidth * 0.76, 40, 160);
+              }, null, 'reveal+=0.04')
+              .call(() => {
+                  introScreen.style.display = 'none';
+                  cursorRing.style.opacity = '1';
+              }, null, 'reveal+=0.9');
+        });
+
+        // ==================== 11. resize 时自动刷新 ====================
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const homeIsActive = document.getElementById('page-home').classList.contains('active');
+                refreshStoryScrollTrigger();
+                renderStoryGrowth(storyGrowth);
+                if (preloadPetals.length) {
+                    if (preloadReady) {
+                        collapsePreloadToCore(false);
+                    } else {
+                        layoutLoadingPetalRing();
+                        updatePreloadVisual(preloadProgressValue);
+                    }
+                }
+                if (homeIsActive) {
+                    initWheelScrollTrigger();
+                } else {
+                    ScrollTrigger.refresh();
+                }
+            }, 200);
+        });
+        
+        // ==================== 12. 资源预加载 ====================
+
+        let preloadProgressValue = 0;
+
+        function createPreloadPetals() {
+            if (preloadPetals.length) return;
+            preloadCluster.innerHTML = '<div id="preload-core"></div>';
+            for (let i = 0; i < PRELOAD_PETAL_COUNT; i += 1) {
+                const petal = document.createElement('span');
+                petal.className = 'preload-petal';
+                petal.style.background = petalPalette[i % petalPalette.length];
+                preloadCluster.appendChild(petal);
+                preloadPetals.push(petal);
+            }
+        }
+
+        function getPreloadCenter() {
+            return {
+                x: envelope.clientWidth / 2,
+                y: envelope.clientHeight * 0.65
+            };
+        }
+
+        function getPreloadRingRadius() {
+            return Math.min(envelope.clientWidth, envelope.clientHeight) * (window.innerWidth >= 768 ? 0.17 : 0.19);
+        }
+
+        function getPetalRingTarget(index) {
+            const center = getPreloadCenter();
+            const radius = getPreloadRingRadius();
+            const total = preloadPetals.length;
+            const angle = (-90 + (360 / total) * index) * Math.PI / 180;
+            return {
+                x: center.x + Math.cos(angle) * radius,
+                y: center.y + Math.sin(angle) * radius,
+                rotate: angle * 180 / Math.PI + 90
+            };
+        }
+
+        function getActivePetalCount(progress) {
+            const count = Math.floor(progress * PRELOAD_PETAL_COUNT);
+            if (progress > 0 && count === 0) return 1;
+            return Math.max(0, Math.min(PRELOAD_PETAL_COUNT, count));
+        }
+
+        function getLoadingArcAngles(progress) {
+            const normalized = Math.max(0, Math.min(1, progress));
+            const extraSpan = normalized <= 0.5 ? 0 : ((normalized - 0.5) / 0.5) * 180;
+            const span = 180 + extraSpan;
+            const start = -180 - extraSpan / 2;
+            const end = 0 + extraSpan / 2;
+            return { start, end, span };
+        }
+
+        function getProgressPetalTarget(orderIndex, activeCount, progress) {
+            const center = getPreloadCenter();
+            const radius = getPreloadRingRadius();
+            const { start, end } = getLoadingArcAngles(progress);
+
+            let angleDeg;
+            if (activeCount <= 1) {
+                angleDeg = -90;
+            } else {
+                angleDeg = start + ((end - start) * orderIndex) / (activeCount - 1);
+            }
+
+            const angle = angleDeg * Math.PI / 180;
+            return {
+                x: center.x + Math.cos(angle) * radius,
+                y: center.y + Math.sin(angle) * radius,
+                rotate: angleDeg + 90
+            };
+        }
+
+        function revealPetalToProgress(petal, orderIndex, activeCount, progress) {
+            const target = getProgressPetalTarget(orderIndex, activeCount, progress);
+            const startX = target.x + gsap.utils.random(-36, 36);
+            const startY = -22 - Math.random() * 34;
+
+            petal.dataset.revealed = '1';
+            petal.dataset.orderIndex = String(orderIndex);
+
+            gsap.killTweensOf(petal);
+            gsap.fromTo(petal,
+                {
+                    xPercent: -50,
+                    yPercent: -50,
+                    x: startX,
+                    y: startY,
+                    rotate: target.rotate + gsap.utils.random(-70, 70),
+                    scale: 0.82 + Math.random() * 0.16,
+                    opacity: 0
+                },
+                {
+                    x: target.x,
+                    y: target.y,
+                    rotate: target.rotate,
+                    scale: 0.94,
+                    opacity: 0.94,
+                    duration: 0.78,
+                    ease: 'power2.out'
+                }
+            );
+        }
+
+        function repositionVisiblePetals(activeCount, progress, animate = true) {
+            for (let i = 0; i < activeCount; i += 1) {
+                const petal = preloadPetals[i];
+                const target = getProgressPetalTarget(i, activeCount, progress);
+                if (!petal) continue;
+
+                if (petal.dataset.revealed === '1') {
+                    gsap.killTweensOf(petal);
+                    if (animate) {
+                        gsap.to(petal, {
+                            xPercent: -50,
+                            yPercent: -50,
+                            x: target.x,
+                            y: target.y,
+                            rotate: target.rotate,
+                            scale: 0.94,
+                            opacity: 0.94,
+                            duration: 0.42,
+                            ease: 'power2.out'
+                        });
+                    } else {
+                        gsap.set(petal, {
+                            xPercent: -50,
+                            yPercent: -50,
+                            x: target.x,
+                            y: target.y,
+                            rotate: target.rotate,
+                            scale: 0.94,
+                            opacity: 0.94
+                        });
+                    }
+                    petal.dataset.orderIndex = String(i);
+                }
+            }
+        }
+
+        function syncPreloadPetalsToProgress(progress, animate = true) {
+            const safeProgress = Math.max(0, Math.min(1, progress));
+            const activeCount = getActivePetalCount(safeProgress);
+
+            preloadPetals.forEach((petal, index) => {
+                if (index >= activeCount) {
+                    gsap.killTweensOf(petal);
+                    petal.dataset.revealed = '';
+                    if (animate) {
+                        gsap.to(petal, {
+                            opacity: 0,
+                            scale: 0.7,
+                            duration: 0.18,
+                            ease: 'power1.out'
+                        });
+                    } else {
+                        gsap.set(petal, { opacity: 0, scale: 0.7 });
+                    }
+                }
+            });
+
+            for (let i = 0; i < activeCount; i += 1) {
+                const petal = preloadPetals[i];
+                if (!petal) continue;
+                if (petal.dataset.revealed === '1') continue;
+                revealPetalToProgress(petal, i, activeCount, safeProgress);
+            }
+
+            repositionVisiblePetals(activeCount, safeProgress, animate);
+        }
+
+        function layoutLoadingPetalRing(progress = preloadProgressValue || 0) {
+            syncPreloadPetalsToProgress(progress, false);
+        }
+
+        function collapsePreloadToCore(animate = false) {
+
+            const center = getPreloadCenter();
+            const core = preloadCluster.querySelector('#preload-core') || preloadCore;
+
+            preloadPetals.forEach((petal, index) => {
+                if (petal._fallTl) petal._fallTl.kill();
+                if (animate) {
+                    gsap.to(petal, {
+                        xPercent: -50,
+                        yPercent: -50,
+                        x: center.x,
+                        y: center.y,
+                        rotate: 0,
+                        scale: 0.42,
+                        opacity: 0,
+                        duration: 0.42,
+                        ease: 'power3.inOut',
+                        delay: index * 0.015
+                    });
+                } else {
+                    gsap.set(petal, { xPercent: -50, yPercent: -50, x: center.x, y: center.y, rotate: 0, scale: 0.42, opacity: 0 });
+                }
+            });
+
+            if (animate) {
+                gsap.fromTo(core,
+                    { left: 0, top: 0, xPercent: -50, yPercent: -50, x: center.x, y: center.y, opacity: 0, scale: 0.52 },
+                    { left: 0, top: 0, xPercent: -50, yPercent: -50, x: center.x, y: center.y, opacity: 1, scale: 1, duration: 0.32, ease: 'back.out(1.7)', delay: 0.16 }
+                );
+            } else {
+                gsap.set(core, { left: 0, top: 0, xPercent: -50, yPercent: -50, x: center.x, y: center.y, opacity: 1, scale: 1 });
+            }
+        }
+
+        function scatterPreloadPetalsOnOpen() {
+            const center = getPreloadCenter();
+            const core = preloadCluster.querySelector('#preload-core') || preloadCore;
+            const total = preloadPetals.length;
+            const spread = Math.min(envelope.clientWidth, envelope.clientHeight) * (window.innerWidth >= 768 ? 0.72 : 0.82);
+
+            gsap.set(preloadCluster, { opacity: 1, scale: 1 });
+
+            preloadPetals.forEach((petal, index) => {
+                if (petal._fallTl) petal._fallTl.kill();
+
+                const angle = (-90 + (360 / total) * index + gsap.utils.random(-18, 18)) * Math.PI / 180;
+                const distance = spread * (0.72 + Math.random() * 0.32);
+
+                gsap.set(petal, {
+                    xPercent: -50,
+                    yPercent: -50,
+                    x: center.x,
+                    y: center.y,
+                    scale: 1.02,
+                    rotate: gsap.utils.random(-24, 24),
+                    opacity: 0.98
+                });
+
+                gsap.to(petal, {
+                    x: center.x + Math.cos(angle) * distance,
+                    y: center.y + Math.sin(angle) * distance,
+                    rotate: gsap.utils.random(-220, 220),
+                    scale: 0.88 + Math.random() * 0.2,
+                    opacity: 0,
+                    duration: 0.72 + Math.random() * 0.16,
+                    ease: 'power2.out',
+                    delay: index * 0.012
+                });
+            });
+
+            gsap.to(core, {
+                left: 0,
+                top: 0,
+                xPercent: -50,
+                yPercent: -50,
+                x: center.x,
+                y: center.y,
+                scale: 0.42,
+                opacity: 0,
+                duration: 0.24,
+                ease: 'power2.inOut'
+            });
+
+            gsap.to(preloadCluster, {
+                opacity: 0,
+                duration: 0.54,
+                ease: 'power2.out',
+                delay: 0.18
+            });
+        }
+
+        function updatePreloadVisual(progress) {
+            preloadProgressValue = Math.max(0, Math.min(1, progress));
+            introHint.textContent = `Loading... ${Math.round(preloadProgressValue * 100)}%`;
+            if (!preloadReady) {
+                syncPreloadPetalsToProgress(preloadProgressValue, true);
+            }
+        }
+
+        function setPreloadReady() {
+            if (preloadReady) return;
+            preloadReady = true;
+
+            envelopeWrapper.style.pointerEvents = 'auto';
+            envelopeWrapper.style.filter = 'none';
+            introHint.innerHTML = '<span class="animate-pulse">Click to open</span>';
+
+            syncPreloadPetalsToProgress(1, true);
+            gsap.delayedCall(0.18, () => collapsePreloadToCore(true));
+
+            gsap.fromTo(envelopeWrapper,
+                { x: 0, rotate: 0 },
+                {
+                    x: 0,
+                    rotate: 0,
+                    duration: 0.45,
+                    ease: 'power2.out',
+                    onStart: () => {
+                        gsap.to(envelopeWrapper, {
+                            keyframes: [
+                                { x: -6, rotate: -1.4, duration: 0.07 },
+                                { x: 5, rotate: 1.2, duration: 0.07 },
+                                { x: -4, rotate: -0.9, duration: 0.07 },
+                                { x: 3, rotate: 0.7, duration: 0.07 },
+                                { x: 0, rotate: 0, duration: 0.09 }
+                            ],
+                            ease: 'power1.inOut'
+                        });
+                    }
+                }
+            );
+        }
+
+        function initPreloader() {
+            const wrapper = document.getElementById('envelope-wrapper');
+            const hint = document.getElementById('intro-hint');
+            const core = preloadCluster.querySelector('#preload-core') || preloadCore;
+
+            preloadReady = false;
+            wrapper.style.pointerEvents = 'none';
+            wrapper.style.filter = 'grayscale(6%)';
+            hint.textContent = 'Loading... 0%';
+            preloadProgressValue = 0;
+
+            createPreloadPetals();
+            preloadPetals.forEach(petal => {
+                if (petal._fallTl) petal._fallTl.kill();
+                petal.dataset.revealed = '';
+                petal.dataset.orderIndex = '';
+                gsap.set(petal, { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.8 });
+            });
+            gsap.set(core, { xPercent: -50, yPercent: -50, left: '50%', top: '50%', opacity: 0, scale: 0.6 });
+            layoutLoadingPetalRing(0);
+
+            const imagesToLoad = [];
+            certData.forEach(cert => imagesToLoad.push('./' + cert.img));
+            projectsData.forEach(proj => {
+                proj.scenes.forEach(scene => imagesToLoad.push('./' + scene.imgSrc));
+            });
+
+            const uniqueImages = [...new Set(imagesToLoad)].filter(Boolean);
+            const totalImages = uniqueImages.length;
+            let loadedCount = 0;
+            let finished = false;
+
+            function markLoaded() {
+                if (finished) return;
+                loadedCount += 1;
+                updatePreloadVisual(loadedCount / totalImages);
+                if (loadedCount >= totalImages) {
+                    finished = true;
+                    setPreloadReady();
+                }
+            }
+
+            if (totalImages === 0) {
+                updatePreloadVisual(1);
+                setPreloadReady();
+                return;
+            }
+
+            uniqueImages.forEach(src => {
+                const img = new Image();
+                let settled = false;
+                const done = () => {
+                    if (settled) return;
+                    settled = true;
+                    markLoaded();
+                };
+                img.onload = done;
+                img.onerror = done;
+                img.src = src;
+                if (img.complete) done();
+                setTimeout(done, 5000);
+            });
+
+            setTimeout(() => {
+                if (!finished) {
+                    finished = true;
+                    updatePreloadVisual(1);
+                    setPreloadReady();
+                }
+            }, 5500);
+        }
+
+
+        // ==================== 留言表单提交 ====================
+        function initMessageForm() {
+            const form = document.getElementById('messageForm');
+            const statusEl = document.getElementById('messageFormStatus');
+            const submitBtn = document.getElementById('messageSubmitBtn');
+
+            if (!form || !statusEl || !submitBtn) return;
+
+            const triggerTurnstileIfNeeded = () => {
+                const contactPage = document.getElementById('page-contact');
+                if (contactPage && contactPage.classList.contains('active')) {
+                    ensureTurnstileReady();
+                }
+            };
+
+            form.addEventListener('focusin', triggerTurnstileIfNeeded);
+            form.addEventListener('pointerenter', triggerTurnstileIfNeeded);
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                triggerTurnstileIfNeeded();
+
+                const formData = new FormData(form);
+                const name = String(formData.get('name') || '').trim();
+                const email = String(formData.get('email') || '').trim();
+                const message = String(formData.get('message') || '').trim();
+
+                if (!name || !message) {
+                    statusEl.textContent = '请先填写称呼和留言内容。';
+                    return;
+                }
+
+                if (!turnstileTokenValue) {
+                    statusEl.textContent = '请先完成人机验证。';
+                    ensureTurnstileReady();
+                    return;
+                }
+
+                formData.set('cf-turnstile-response', turnstileTokenValue);
+
+                submitBtn.disabled = true;
+                statusEl.textContent = '正在发送留言…';
+
+                try {
+                    const response = await fetch('/api/message', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json().catch(() => ({ ok: false, error: '提交失败，请稍后再试。' }));
+
+                    if (!response.ok || !result.ok) {
+                        throw new Error(result.error || '提交失败，请稍后再试。');
+                    }
+
+                    form.reset();
+                    turnstileTokenValue = '';
+                    statusEl.textContent = '留言已发送成功，我会在后台查看。';
+                    resetTurnstileWidget(false);
+                } catch (error) {
+                    turnstileTokenValue = '';
+                    statusEl.textContent = error.message || '提交失败，请稍后再试。';
+                    resetTurnstileWidget(false);
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        initMessageForm();
+
+        const currentActivePage = document.querySelector('.page-view.active');
+        if (currentActivePage && currentActivePage.id === 'page-contact') {
+            ensureTurnstileReady();
+        }
+
+        // 初始化预加载模块
+        initPreloader();
+
+    </script>
+</body>
+</html>
